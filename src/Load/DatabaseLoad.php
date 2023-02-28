@@ -45,7 +45,8 @@ class DatabaseLoad implements WriteInterface, PushInterface
                     ->insert($options['into'])
                     ->values($values)
                     ->setParameters($parameters)
-                    ->executeQuery();
+                    ->executeQuery()
+                ;
             }
             $connection->commit();
         } catch (\Exception $e) {

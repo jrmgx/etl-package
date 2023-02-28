@@ -32,7 +32,11 @@ extract:
 
 transform:
   filter:
-    type: none
+    type: query
+    options:
+      where: 'Age > :min'
+      parameters:
+        min: 30
   mapping:
     type: expressive
     map:
@@ -45,7 +49,7 @@ load:
     format: json
   push:
     type: http
-    uri: https://example.org/api/customer
+    uri: https://webhook.site/f24c112b-8344-4fe3-a9e5-53baf36c912f
     options:
       headers:
         'Authorization': 'Basic 9e222b3b7647c7'
@@ -66,6 +70,7 @@ But for the sake of simplicity, the documentation has been split into multiple s
 
 ### Transformers: Filters and Mapping
 
+- [Query Filter](documentation/query.md)
 - [Simple Transformer](documentation/simple.md)
 - [Expressive Transformer](documentation/expressive.md)
 
