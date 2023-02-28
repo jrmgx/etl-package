@@ -13,23 +13,29 @@
     ],
     "require": {
         "php": "^8.1",
+        "ext-mbstring": "*",
         "doctrine/dbal": "^3.6",
         "symfony/dependency-injection": "^6.2",
         "symfony/expression-language": "^6.2",
         "symfony/http-client": "^6.2",
         "symfony/options-resolver": "^6.2",
         "symfony/property-access": "^6.2",
-        "symfony/yaml": "^6.2",
         "twig/twig": "^3.5"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.14",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^10.0"
+        "phpunit/phpunit": "^10.0",
+        "symfony/yaml": "^6.2"
     },
     "autoload": {
         "psr-4": {
             "Jrmgx\\Etl\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jrmgx\\Etl\\Tests\\": "tests/"
         }
     },
     "config": {
