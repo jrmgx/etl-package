@@ -31,11 +31,14 @@ extract:
       trim: true
 
 transform:
-  type: expressive
+  filter:
+    type: none
   mapping:
-    out.name: in.Name
-    out.sex: in.Sex
-    out.age_in_sec: 'in.Age * 365 * 24 * 60 * 60'
+    type: expressive
+    map:
+      out.name: in.Name
+      out.sex: in.Sex
+      out.age_in_sec: 'in.Age * 365 * 24 * 60 * 60'
 
 load:
   write:
@@ -53,11 +56,18 @@ load:
 On the ETL part, everything is configured into one single file that describe each steps.  
 But for the sake of simplicity, the documentation has been split into multiple sections.
 
+### Extractors and Loaders
+
 - [HTTP and API](documentation/http.md)
 - [Database](documentation/database.md)
 - [File (local and distant)](documentation/file.md)
 - [Templates (Twig)](documentation/twig.md)
+- [In Memory](documentation/memory.md)
 
+### Transformers: Filters and Mapping
+
+- [Simple Transformer](documentation/simple.md)
+- [Expressive Transformer](documentation/expressive.md)
 
 ## Use it in your project
 

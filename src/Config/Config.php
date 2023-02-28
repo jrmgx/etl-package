@@ -14,7 +14,12 @@ class Config extends AbstractConfig
                 $innerResolver->setAllowedTypes('pull', 'array');
                 $innerResolver->setAllowedTypes('read', 'array');
             },
-            'transform' => [],
+            'transform' => function (OptionsResolver $innerResolver) {
+                $innerResolver->setDefaults(['filter' => []]);
+                $innerResolver->setRequired(['mapping']);
+                $innerResolver->setAllowedTypes('filter', 'array');
+                $innerResolver->setAllowedTypes('mapping', 'array');
+            },
             'load' => function (OptionsResolver $innerResolver) {
                 $innerResolver->setRequired(['write', 'push']);
                 $innerResolver->setAllowedTypes('write', 'array');
@@ -37,9 +42,14 @@ class Config extends AbstractConfig
         return new ReadConfig($this->config['extract']['read']);
     }
 
-    public function getTransformConfig(): TransformConfig
+    public function getFilterConfig(): FilterConfig
     {
-        return new TransformConfig($this->config['transform']);
+        return new FilterConfig($this->config['transform']['filter'] ?? []);
+    }
+
+    public function getMappingConfig(): MappingConfig
+    {
+        return new MappingConfig($this->config['transform']['mapping']);
     }
 
     public function getWriteConfig(): WriteConfig

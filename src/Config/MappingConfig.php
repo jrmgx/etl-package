@@ -4,16 +4,17 @@ namespace Jrmgx\Etl\Config;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class TransformConfig extends AbstractConfig
+class MappingConfig extends AbstractConfig
 {
     protected function configureOptionsResolver(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'type' => 'simple',
-            'mapping' => null,
+            'map' => null,
+            'options' => [],
         ]);
+        $resolver->setRequired(['type']);
         $resolver->setAllowedTypes('type', 'string');
-        $resolver->setAllowedTypes('mapping', ['array', 'null']);
     }
 
     public function getType(): string
@@ -24,8 +25,8 @@ class TransformConfig extends AbstractConfig
     /**
      * @return ?array<mixed>
      */
-    public function getMapping(): ?array
+    public function getMap(): ?array
     {
-        return $this->config['mapping'];
+        return $this->config['map'];
     }
 }

@@ -8,7 +8,8 @@ use Jrmgx\Etl\Extract\Pull\FilePull;
 use Jrmgx\Etl\Extract\Read\CsvRead;
 use Jrmgx\Etl\Load\MemoryLoad;
 use Jrmgx\Etl\MemoryCommon;
-use Jrmgx\Etl\Transform\SimpleTransform;
+use Jrmgx\Etl\Transform\Filter\NoneFilter;
+use Jrmgx\Etl\Transform\Mapping\SimpleMapping;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -28,7 +29,8 @@ extract:
       trim: true
 
 transform:
-  type: simple
+  mapping:
+    type: simple
 
 load:
   write:
@@ -55,11 +57,18 @@ YAML;
             ->willReturn(new CsvRead())
         ;
 
-        /** @var ContainerInterface $transformServices */
-        $transformServices = $this->createStub(ContainerInterface::class);
-        $transformServices
+        /** @var ContainerInterface $filterServices */
+        $filterServices = $this->createStub(ContainerInterface::class);
+        $filterServices
             ->method('get')
-            ->willReturn(new SimpleTransform())
+            ->willReturn(new NoneFilter())
+        ;
+
+        /** @var ContainerInterface $mappingServices */
+        $mappingServices = $this->createStub(ContainerInterface::class);
+        $mappingServices
+            ->method('get')
+            ->willReturn(new SimpleMapping())
         ;
 
         /** @var ContainerInterface $writeServices */
@@ -79,7 +88,8 @@ YAML;
         $etl = new Etl(
             $pullServices,
             $readServices,
-            $transformServices,
+            $filterServices,
+            $mappingServices,
             $writeServices,
             $pushServices,
         );

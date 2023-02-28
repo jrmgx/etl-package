@@ -1,17 +1,17 @@
 <?php
 
-namespace Jrmgx\Etl\Transform;
+namespace Jrmgx\Etl\Transform\Mapping;
 
-use Jrmgx\Etl\Config\TransformConfig;
+use Jrmgx\Etl\Config\MappingConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('etl.transform.mapping')]
-interface TransformInterface
+interface MappingInterface
 {
     /**
      * @param array<mixed> $data
      *
      * @return array<mixed>
      */
-    public function map(array $data, TransformConfig $config): array;
+    public function map(array $data, MappingConfig $config): array;
 }

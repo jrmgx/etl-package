@@ -1,14 +1,14 @@
 <?php
 
-namespace Jrmgx\Etl\Transform;
+namespace Jrmgx\Etl\Transform\Mapping;
 
-use Jrmgx\Etl\Config\TransformConfig;
+use Jrmgx\Etl\Config\MappingConfig;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 #[AsTaggedItem(index: 'simple')]
-class SimpleTransform implements TransformInterface
+class SimpleMapping implements MappingInterface
 {
     private PropertyAccessorInterface $propertyAccessor;
 
@@ -24,9 +24,9 @@ class SimpleTransform implements TransformInterface
      *
      * @return array<mixed>
      */
-    public function map(array $data, TransformConfig $config): array
+    public function map(array $data, MappingConfig $config): array
     {
-        $mapping = $config->getMapping();
+        $mapping = $config->getMap();
         if (null === $mapping) {
             return $data; // identity
         }
