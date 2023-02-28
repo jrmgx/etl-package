@@ -20,15 +20,15 @@ class SimpleTransform implements TransformInterface
     }
 
     /**
-     * @param array<mixed> $lines
+     * @param array<mixed> $data
      *
      * @return array<mixed>
      */
-    public function map(array $lines, TransformConfig $config): array
+    public function map(array $data, TransformConfig $config): array
     {
         $mapping = $config->getMapping();
         if (null === $mapping) {
-            return $lines; // identity
+            return $data; // identity
         }
 
         $keys = array_map(fn (string $k) => mb_substr($k, 4), array_keys($mapping));
@@ -37,7 +37,7 @@ class SimpleTransform implements TransformInterface
 
         $result = [];
 
-        foreach ($lines as $line) {
+        foreach ($data as $line) {
             $newLine = [];
             foreach ($mapping as $mappingOut => $mappingIn) {
                 $encoded = json_encode($line);
