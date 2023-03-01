@@ -10,12 +10,10 @@ transform:
   filter:
     type: query
     options:
-      select: ['value']
-      from: key_values
-      where: 'key <> :forbidden_key AND value <> :forbidden_value'
+      select: ['name', 'age', 'data']
+      where: 'size > :size'
       parameters:
-        forbidden_key: 'foo'
-        forbidden_value: 'value'
+        size: 1
   mapping:
     type: simple
     map:

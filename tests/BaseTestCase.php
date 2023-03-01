@@ -6,12 +6,15 @@ use PHPUnit\Framework\TestCase;
 
 class BaseTestCase extends TestCase
 {
+    /**
+     * @var array<array{int, string, string, int}>
+     */
     private array $warnings = [];
 
     protected function setUp(): void
     {
         set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) {
-            $this->warnings[] = $errstr;
+            $this->warnings[] = [$errno, $errstr, $errfile, $errline];
         });
     }
 
@@ -25,7 +28,7 @@ class BaseTestCase extends TestCase
         $lastWarning = array_shift($warnings);
         $this->warnings = $warnings;
 
-        $this->assertSame($expectedMessage, $lastWarning, $message);
+        $this->assertSame($expectedMessage, $lastWarning[1], $message);
     }
 
     protected function tearDown(): void
@@ -33,7 +36,7 @@ class BaseTestCase extends TestCase
         if (\count($this->warnings) > 0) {
             $this->fail(
                 'Some warning did not have been handled:' . \PHP_EOL .
-                implode(\PHP_EOL, $this->warnings)
+                json_encode($this->warnings)
             );
         }
     }

@@ -8,17 +8,27 @@ class Config extends AbstractConfig
 {
     protected function configureOptionsResolver(OptionsResolver $resolver): void
     {
+        $transformOptionsResolver = function (OptionsResolver $innerResolver) {
+            $innerResolver->setDefaults(['filter' => []]);
+            $innerResolver->setRequired(['mapping']);
+            $innerResolver->setAllowedTypes('filter', 'array');
+            $innerResolver->setAllowedTypes('mapping', 'array');
+        };
+
+        if (isset($this->config['transformers'])) {
+            $resolver->setDefault('transformers', function (OptionsResolver $innerResolver) use ($transformOptionsResolver) {
+                $innerResolver->setPrototype(true);
+                $transformOptionsResolver($innerResolver);
+            });
+        } else {
+            $resolver->setDefault('transform', $transformOptionsResolver);
+        }
+
         $resolver->setDefaults([
             'extract' => function (OptionsResolver $innerResolver) {
                 $innerResolver->setRequired(['pull', 'read']);
                 $innerResolver->setAllowedTypes('pull', 'array');
                 $innerResolver->setAllowedTypes('read', 'array');
-            },
-            'transform' => function (OptionsResolver $innerResolver) {
-                $innerResolver->setDefaults(['filter' => []]);
-                $innerResolver->setRequired(['mapping']);
-                $innerResolver->setAllowedTypes('filter', 'array');
-                $innerResolver->setAllowedTypes('mapping', 'array');
             },
             'load' => function (OptionsResolver $innerResolver) {
                 $innerResolver->setRequired(['write', 'push']);
@@ -28,7 +38,6 @@ class Config extends AbstractConfig
         ]);
         $resolver->setRequired(['extract', 'load']);
         $resolver->setAllowedTypes('extract', 'array');
-        $resolver->setAllowedTypes('transform', 'array');
         $resolver->setAllowedTypes('load', 'array');
     }
 
@@ -42,14 +51,24 @@ class Config extends AbstractConfig
         return new ReadConfig($this->config['extract']['read']);
     }
 
-    public function getFilterConfig(): FilterConfig
+    /**
+     * @return \Generator<array{FilterConfig, MappingConfig}>
+     */
+    public function getTransformers(): \Generator
     {
-        return new FilterConfig($this->config['transform']['filter'] ?? []);
-    }
-
-    public function getMappingConfig(): MappingConfig
-    {
-        return new MappingConfig($this->config['transform']['mapping']);
+        if (isset($this->config['transformers']) && \count($this->config['transformers']) > 0) {
+            foreach ($this->config['transformers'] as $transformer) {
+                yield [
+                    new FilterConfig($transformer['filter'] ?? []),
+                    new MappingConfig($transformer['mapping']),
+                ];
+            }
+        } else {
+            yield [
+                new FilterConfig($this->config['transform']['filter'] ?? []),
+                new MappingConfig($this->config['transform']['mapping']),
+            ];
+        }
     }
 
     public function getWriteConfig(): WriteConfig

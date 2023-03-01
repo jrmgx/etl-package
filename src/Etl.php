@@ -40,22 +40,29 @@ class Etl
         $extractReadFormat = $config->getReadConfig()->getFormat();
         /** @var ReadInterface $extractReadService */
         $extractReadService = $this->readServices->get($extractReadFormat);
-        $read = $extractReadService->read($readResource, $config->getReadConfig());
+        $data = $extractReadService->read($readResource, $config->getReadConfig());
 
-        $filterType = $config->getFilterConfig()->getType();
-        /** @var FilterInterface $filterService */
-        $filterService = $this->filterServices->get($filterType);
-        $filtered = $filterService->filter($read, $config->getFilterConfig());
+        foreach ($config->getTransformers() as $transformer) {
+            [$filterConfig, $mappingConfig] = $transformer;
 
-        $mappingType = $config->getMappingConfig()->getType();
-        /** @var MappingInterface $mappingService */
-        $mappingService = $this->mappingServices->get($mappingType);
-        $mapped = $mappingService->map($filtered, $config->getMappingConfig());
+            $filterType = $filterConfig->getType();
+            if ('none' !== $filterType) {
+                /** @var FilterInterface $filterService */
+                $filterService = $this->filterServices->get($filterType);
+                $data = $filterService->filter($data, $filterConfig);
+            }
+
+            $mappingType = $mappingConfig->getType();
+            /** @var MappingInterface $mappingService */
+            $mappingService = $this->mappingServices->get($mappingType);
+
+            $data = $mappingService->map($data, $mappingConfig);
+        }
 
         $loadWriteFormat = $config->getWriteConfig()->getFormat();
         /** @var WriteInterface $loadWriteService */
         $loadWriteService = $this->writeServices->get($loadWriteFormat);
-        $writeResource = $loadWriteService->write($mapped, $config->getWriteConfig());
+        $writeResource = $loadWriteService->write($data, $config->getWriteConfig());
 
         $loadPushType = $config->getPushConfig()->getType();
         /** @var PushInterface $loadPushService */

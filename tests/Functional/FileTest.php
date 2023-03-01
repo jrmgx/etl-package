@@ -9,7 +9,7 @@ use Jrmgx\Etl\Extract\Read\CsvRead;
 use Jrmgx\Etl\Load\Push\FilePush;
 use Jrmgx\Etl\Load\Write\JsonWrite;
 use Jrmgx\Etl\Tests\BaseTestCase;
-use Jrmgx\Etl\Transform\Filter\NoneFilter;
+use Jrmgx\Etl\Transform\Mapping\ExpressiveMapping;
 use Jrmgx\Etl\Transform\Mapping\SimpleMapping;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -34,9 +34,18 @@ extract:
       trim: true
       with_header: ["Name", "Sex", "Age", "Height", "Weight"]
 
-transform:
-  mapping:
-    type: simple
+transformers:
+  first_transform:
+    mapping:
+      type: simple
+
+  second_transform:
+    mapping:
+      type: expressive
+      map:
+        out.name: in.Name
+        out.sex: in.Sex
+        out.squared: 'in.Height * in.Weight'
 
 load:
   write:
@@ -65,16 +74,15 @@ YAML;
 
         /** @var ContainerInterface $filterServices */
         $filterServices = $this->createStub(ContainerInterface::class);
-        $filterServices
-            ->method('get')
-            ->willReturn(new NoneFilter())
-        ;
 
         /** @var ContainerInterface $mappingServices */
         $mappingServices = $this->createStub(ContainerInterface::class);
         $mappingServices
             ->method('get')
-            ->willReturn(new SimpleMapping())
+            ->willReturnCallback(fn (string $arg) => match ($arg) {
+                'simple' => new SimpleMapping(),
+                'expressive' => new ExpressiveMapping(),
+            })
         ;
 
         /** @var ContainerInterface $writeServices */
@@ -109,11 +117,9 @@ YAML;
         $this->assertCount(18, $data);
         $this->assertIsArray($data[0]);
         $this->assertTrue($data[0] === [
-            'Name' => 'Alex',
-            'Sex' => 'M',
-            'Age' => '41',
-            'Height' => '74',
-            'Weight' => '170',
+            'name' => 'Alex',
+            'sex' => 'M',
+            'squared' => 12580,
         ]);
 
         unlink($out);

@@ -9,7 +9,6 @@ use Jrmgx\Etl\Extract\Read\CsvRead;
 use Jrmgx\Etl\Load\MemoryLoad;
 use Jrmgx\Etl\MemoryCommon;
 use Jrmgx\Etl\Tests\BaseTestCase;
-use Jrmgx\Etl\Transform\Filter\NoneFilter;
 use Jrmgx\Etl\Transform\Mapping\SimpleMapping;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -60,10 +59,6 @@ YAML;
 
         /** @var ContainerInterface $filterServices */
         $filterServices = $this->createStub(ContainerInterface::class);
-        $filterServices
-            ->method('get')
-            ->willReturn(new NoneFilter())
-        ;
 
         /** @var ContainerInterface $mappingServices */
         $mappingServices = $this->createStub(ContainerInterface::class);
