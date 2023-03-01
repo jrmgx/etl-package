@@ -25,32 +25,45 @@ class CsvRead implements ReadInterface
                 'separator' => ',',
                 'enclosure' => '"',
                 'escape' => '\\',
+                'with_header' => null,
             ]);
+            $resolver->addAllowedTypes('with_header', ['array', 'null']);
         });
 
         $data = [];
         $headerData = null;
-        foreach (explode("\n", $resource) as $line) {
-            $line = trim($line);
-            if ('' === $line) {
+        if (false === $options['header'] && \is_array($options['with_header'])) {
+            $headerData = $options['with_header'];
+        }
+        foreach (explode("\n", $resource) as $fileLine) {
+            $fileLine = trim($fileLine);
+            if ('' === $fileLine) {
                 continue;
             }
 
-            $d = str_getcsv($line, $options['separator'], $options['enclosure'], $options['escape']);
+            $dataLine = str_getcsv($fileLine, $options['separator'], $options['enclosure'], $options['escape']);
 
             if ($options['trim']) {
                 /** @phpstan-ignore-next-line */
-                $d = array_map(trim(...), $d);
+                $dataLine = array_map(trim(...), $dataLine);
             }
 
             if (true === $options['header'] && null === $headerData) {
                 /** @var array<int, string> $headerData */
-                $headerData = $d;
+                $headerData = $dataLine;
+                if (\is_array($options['with_header'])) {
+                    $headerData = $options['with_header'];
+                }
+                foreach ($headerData as $key) {
+                    if (preg_match('`[^a-zA-Z0-9_-]`mu', $key)) {
+                        throw new \Exception('CSV header key "' . $key . '" contains special characters (other than [a-zA-Z0-9_-]). It will be problematic down the chain. Use the `with_header` option to override it.');
+                    }
+                }
             } else {
                 if (null !== $headerData) {
-                    $d = array_combine($headerData, $d);
+                    $dataLine = array_combine($headerData, $dataLine);
                 }
-                $data[] = $d;
+                $data[] = $dataLine;
             }
         }
 

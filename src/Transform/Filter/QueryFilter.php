@@ -46,7 +46,7 @@ class QueryFilter implements FilterInterface
         $table = $schema->createTable('filterTable');
         foreach ($keyValues as $key => $values) {
             $type = $this->deduceTypeFromColumn($values);
-            $table->addColumn((string) $key, $type);
+            $table->addColumn($connection->quoteIdentifier((string) $key), $type);
             $keyType[$key] = $type;
         }
 
@@ -62,7 +62,7 @@ class QueryFilter implements FilterInterface
             $values = [];
             $parameters = [];
             foreach ($lines as $key => $value) {
-                $values[$key] = '?';
+                $values[$connection->quoteIdentifier($key)] = '?';
                 if (Types::BLOB === $keyType[$key]) {
                     $value = serialize($value);
                 }
@@ -79,7 +79,12 @@ class QueryFilter implements FilterInterface
         // Apply the query
 
         $queryBuilder = $connection->createQueryBuilder();
-        $queryBuilder->select($options['select']);
+        if (\is_array($options['select'])) {
+            $select = array_map($connection->quoteIdentifier(...), $options['select']);
+        } else {
+            $select = $options['select'];
+        }
+        $queryBuilder->select($select);
         $queryBuilder->from('filterTable');
         if (null !== $options['where']) {
             $queryBuilder->andWhere($options['where']);

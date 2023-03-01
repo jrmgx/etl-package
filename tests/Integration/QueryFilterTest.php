@@ -3,10 +3,10 @@
 namespace Jrmgx\Etl\Tests\Integration;
 
 use Jrmgx\Etl\Config\FilterConfig;
+use Jrmgx\Etl\Tests\BaseTestCase;
 use Jrmgx\Etl\Transform\Filter\QueryFilter;
-use PHPUnit\Framework\TestCase;
 
-class QueryFilterTest extends TestCase
+class QueryFilterTest extends BaseTestCase
 {
     /**
      * @dataProvider columData
@@ -33,7 +33,7 @@ class QueryFilterTest extends TestCase
     {
         $filterConfig = new FilterConfig([
             'options' => [
-                'select' => ['name', 'age', 'data'],
+                'select' => ['first name', 'age', 'data'],
                 'where' => 'size > :size',
                 'parameters' => [
                     'size' => '1',
@@ -68,7 +68,7 @@ class QueryFilterTest extends TestCase
             [[
                 [
                     'age' => 13,
-                    'name' => 'Pierre',
+                    'first name' => 'Pierre',
                     'size' => 1.23,
                     'data' => [
                         'extra' => 'value',
@@ -76,22 +76,22 @@ class QueryFilterTest extends TestCase
                     ],
                 ], [
                     'age' => 14,
-                    'name' => 'Paul',
+                    'first name' => 'Paul',
                     'size' => 1.13,
                     'data' => ['extra' => 'value'],
                 ], [
                     'age' => 18,
-                    'name' => 'Jacques',
+                    'first name' => 'Jacques',
                     'size' => 1.93,
                     'data' => ['extra' => 'value'],
                 ], [
                     'age' => 12,
-                    'name' => 'Nina',
+                    'first name' => 'Nina',
                     'size' => '0.88',
                     'data' => ['extra' => 'value'],
                 ], [
                     'age' => '1',
-                    'name' => 'Elise',
+                    'first name' => 'Elise',
                     'size' => 0.23,
                     'data' => ['extra' => 'value'],
                 ],

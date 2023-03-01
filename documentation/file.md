@@ -20,6 +20,8 @@ extract:
             enclosure: '"'
             trim: true
             header: true
+            # with_header is an array to override or specify the header for that CSV
+            with_header: ["Name", "Sex", "Age", "Height", "Weight"]
 
 # This can be left empty, even removed: it means "identity"
 transform:

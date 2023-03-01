@@ -2,10 +2,10 @@
 
 namespace Jrmgx\Etl\Tests\Unit;
 
+use Jrmgx\Etl\Tests\BaseTestCase;
 use Jrmgx\Etl\Transform\Filter\QueryFilter;
-use PHPUnit\Framework\TestCase;
 
-class QueryFilterTest extends TestCase
+class QueryFilterTest extends BaseTestCase
 {
     public function testIsFloat(): void
     {

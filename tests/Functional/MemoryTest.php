@@ -8,13 +8,13 @@ use Jrmgx\Etl\Extract\Pull\FilePull;
 use Jrmgx\Etl\Extract\Read\CsvRead;
 use Jrmgx\Etl\Load\MemoryLoad;
 use Jrmgx\Etl\MemoryCommon;
+use Jrmgx\Etl\Tests\BaseTestCase;
 use Jrmgx\Etl\Transform\Filter\NoneFilter;
 use Jrmgx\Etl\Transform\Mapping\SimpleMapping;
-use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
 
-class MemoryTest extends TestCase
+class MemoryTest extends BaseTestCase
 {
     public function testMemoryToMemory(): void
     {
@@ -27,6 +27,7 @@ extract:
     format: csv
     options:
       trim: true
+      with_header: ["Name", "Sex", "Age", "Height", "Weight"]
 
 transform:
   mapping:
@@ -103,12 +104,16 @@ YAML;
             }
         };
 
-        $this->assertTrue($memoryClass::get()['test'][0] === [
+        $memory = $memoryClass::get()['test'];
+        $this->assertIsArray($memory);
+        $this->assertCount(18, $memory);
+        $this->assertIsArray($memory[0]);
+        $this->assertTrue($memory[0] === [
             'Name' => 'Alex',
             'Sex' => 'M',
             'Age' => '41',
-            'Height (in)' => '74',
-            'Weight (lbs)' => '170',
+            'Height' => '74',
+            'Weight' => '170',
         ]);
     }
 }
