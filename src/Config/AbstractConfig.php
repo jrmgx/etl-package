@@ -12,6 +12,7 @@ abstract class AbstractConfig
 
     /**
      * @param array<mixed> $config
+     * @param ?string      $rootPath directory from where relative path will be resolved in your configuration
      */
     public function __construct(protected array $config, ?string $rootPath = null)
     {

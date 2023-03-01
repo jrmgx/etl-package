@@ -1,4 +1,6 @@
-# Twig templating
+# Load: Write
+
+## Twig templating
 
 ```yaml
 load:
@@ -6,4 +8,12 @@ load:
     format: twig
     options:
       template: ./demo/document_template.html.twig
+```
+
+## JSON
+
+```yaml
+load:
+  write:
+    format: json
 ```

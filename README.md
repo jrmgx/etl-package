@@ -18,7 +18,7 @@ In this basic example:
 - We transform the data a bit
 - We send back the transformed data into an API as JSON
 
-Yaml is optional, and it could have been a plain PHP array.
+Yaml is optional, it could have been a plain PHP array.
 
 ```yaml
 extract:
@@ -60,19 +60,15 @@ load:
 On the ETL part, everything is configured into one single file that describe each steps.  
 But for the sake of simplicity, the documentation has been split into multiple sections.
 
-### Extractors and Loaders
-
-- [HTTP and API](documentation/http.md)
-- [Database](documentation/database.md)
-- [File (local and distant)](documentation/file.md)
-- [Templates (Twig)](documentation/twig.md)
-- [In Memory](documentation/memory.md)
-
-### Transformers: Filters and Mapping
-
-- [Query Filter](documentation/query.md)
-- [Simple Transformer](documentation/simple.md)
-- [Expressive Transformer](documentation/expressive.md)
+- [Extractors](documentation/extractors.md)
+- [Extract: Pull](documentation/extract_pull.md)
+- [Extract: Read](documentation/extract_read.md)
+- [Transformers](documentation/transformers.md)
+- [Transform: Filter](documentation/transform_filter.md)
+- [Transform: Mapping](documentation/transform_mapping.md)
+- [Loaders](documentation/loaders.md)
+- [Load: Push](documentation/load_push.md)
+- [Load: Write](documentation/load_write.md)
 
 ## Use it in your project
 
@@ -132,7 +128,6 @@ Explain the `customOptionsResolver`
 
 ## Run the project
 
-explain `composer dump-autoload --classmap-authoritative`
 ...
 
 ## Tests and code style
