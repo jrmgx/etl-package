@@ -3,6 +3,12 @@
 namespace Jrmgx\Etl;
 
 use Jrmgx\Etl\Config\Config;
+use Jrmgx\Etl\Config\FilterConfig;
+use Jrmgx\Etl\Config\MappingConfig;
+use Jrmgx\Etl\Config\PullConfig;
+use Jrmgx\Etl\Config\PushConfig;
+use Jrmgx\Etl\Config\ReadConfig;
+use Jrmgx\Etl\Config\WriteConfig;
 use Jrmgx\Etl\Extract\Pull\PullInterface;
 use Jrmgx\Etl\Extract\Read\ReadInterface;
 use Jrmgx\Etl\Load\Push\PushInterface;
@@ -32,17 +38,32 @@ class Etl
 
     public function execute(Config $config): void
     {
-        $extractPullType = $config->getPullConfig()->getType();
+        $data = $this->extract($config->getPullConfig(), $config->getReadConfig());
+        $data = $this->transform($data, $config->getTransformers());
+        $this->load($data, $config->getWriteConfig(), $config->getPushConfig());
+    }
+
+    public function extract(PullConfig $pullConfig, ReadConfig $readConfig): mixed
+    {
         /** @var PullInterface $extractPullService */
-        $extractPullService = $this->pullServices->get($extractPullType);
-        $readResource = $extractPullService->pull($config->getPullConfig());
+        $extractPullService = $this->pullServices->get($pullConfig->getType());
+        $readResource = $extractPullService->pull($pullConfig);
 
-        $extractReadFormat = $config->getReadConfig()->getFormat();
         /** @var ReadInterface $extractReadService */
-        $extractReadService = $this->readServices->get($extractReadFormat);
-        $data = $extractReadService->read($readResource, $config->getReadConfig());
+        $extractReadService = $this->readServices->get($readConfig->getFormat());
 
-        foreach ($config->getTransformers() as $transformer) {
+        return $extractReadService->read($readResource, $readConfig);
+    }
+
+    /**
+     * @param array<mixed> $data
+     * @param \Generator<array{FilterConfig, MappingConfig}> $configs
+     *
+     * @return array<mixed>
+     */
+    public function transform(array $data, \Generator $configs): array
+    {
+        foreach ($configs as $transformer) {
             [$filterConfig, $mappingConfig] = $transformer;
 
             $filterType = $filterConfig->getType();
@@ -52,21 +73,26 @@ class Etl
                 $data = $filterService->filter($data, $filterConfig);
             }
 
-            $mappingType = $mappingConfig->getType();
             /** @var MappingInterface $mappingService */
-            $mappingService = $this->mappingServices->get($mappingType);
+            $mappingService = $this->mappingServices->get($mappingConfig->getType());
 
             $data = $mappingService->map($data, $mappingConfig);
         }
 
-        $loadWriteFormat = $config->getWriteConfig()->getFormat();
-        /** @var WriteInterface $loadWriteService */
-        $loadWriteService = $this->writeServices->get($loadWriteFormat);
-        $writeResource = $loadWriteService->write($data, $config->getWriteConfig());
+        return $data;
+    }
 
-        $loadPushType = $config->getPushConfig()->getType();
+    /**
+     * @param array<mixed> $data
+     */
+    public function load(array $data, WriteConfig $writeConfig, PushConfig $pushConfig): void
+    {
+        /** @var WriteInterface $loadWriteService */
+        $loadWriteService = $this->writeServices->get($writeConfig->getFormat());
+        $writeResource = $loadWriteService->write($data, $writeConfig);
+
         /** @var PushInterface $loadPushService */
-        $loadPushService = $this->pushServices->get($loadPushType);
-        $loadPushService->push($writeResource, $config->getPushConfig());
+        $loadPushService = $this->pushServices->get($pushConfig->getType());
+        $loadPushService->push($writeResource, $pushConfig);
     }
 }
