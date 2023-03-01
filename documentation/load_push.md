@@ -26,21 +26,6 @@ load:
     uri: pdo-sqlite://user:password@host:1234/../demo/database_out.sqlite
 ```
 
-
-## Memory
-
-Load + Push combo
-
-```yaml
-load:
-  # This is a bit redundant, but it may be omitted in a future version
-  write:
-    format: memory
-  push:
-    type: memory
-    uri: memory://other_identifier
-```
-
 ## HTTP
 
 ```yaml

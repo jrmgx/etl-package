@@ -31,20 +31,6 @@ extract:
         forbidden_value: 'value'
 ```
 
-## Memory
-
-Pull + Read combo
-
-```yaml
-extract:
-  pull:
-    type: memory
-    uri: memory://your_identifier
-  # This is a bit redundant, but it may be omitted in a future version
-  read: 
-    format: memory
-```
-
 ## HTTP
 
 ```yaml
