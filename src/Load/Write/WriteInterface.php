@@ -3,10 +3,11 @@
 namespace Jrmgx\Etl\Load\Write;
 
 use Jrmgx\Etl\Config\WriteConfig;
+use Jrmgx\Etl\EtlComponentInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('etl.load.write')]
-interface WriteInterface
+interface WriteInterface extends EtlComponentInterface
 {
     /**
      * @param array<mixed> $data

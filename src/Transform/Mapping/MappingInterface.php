@@ -3,10 +3,11 @@
 namespace Jrmgx\Etl\Transform\Mapping;
 
 use Jrmgx\Etl\Config\MappingConfig;
+use Jrmgx\Etl\EtlComponentInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('etl.transform.mapping')]
-interface MappingInterface
+interface MappingInterface extends EtlComponentInterface
 {
     /**
      * @param array<mixed> $data

@@ -3,12 +3,25 @@
 namespace Jrmgx\Etl\Extract\Read;
 
 use Jrmgx\Etl\Config\ReadConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[AsTaggedItem(index: 'json')]
 class JsonRead implements ReadInterface
 {
+    public function optionsDefinition(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('options');
+        $treeBuilder->getRootNode()
+            ->children()
+                ->booleanNode('associative')
+                ->defaultValue(false)
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+
     /**
      * @param mixed $resource a string containing a valid JSON representation of some values
      */
@@ -18,11 +31,7 @@ class JsonRead implements ReadInterface
             return []; // TODO error
         }
 
-        $options = $config->resolveCustomOptions(function (OptionsResolver $resolver) {
-            $resolver->setDefaults([
-                'associative' => true,
-            ]);
-        });
+        $options = $config->resolveOptions($this->optionsDefinition());
 
         return json_decode($resource, $options['associative']);
     }

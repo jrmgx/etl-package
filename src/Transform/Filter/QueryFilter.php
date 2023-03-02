@@ -7,25 +7,37 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Jrmgx\Etl\Config\FilterConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[AsTaggedItem('query')]
 class QueryFilter implements FilterInterface
 {
+    public function optionsDefinition(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('options');
+        $treeBuilder->getRootNode()
+            ->children()
+                ->arrayNode('select')
+                    ->ignoreExtraKeys(false)
+                ->end()
+                ->scalarNode('where')->end()
+                ->arrayNode('parameters')
+                    ->ignoreExtraKeys(false)
+                ->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+
     public function filter(array $data, FilterConfig $config): array
     {
         if (0 === \count($data)) {
             return [];
         }
 
-        $options = $config->resolveCustomOptions(function (OptionsResolver $resolver) {
-            $resolver->setDefaults([
-                'select' => '*',
-                'where' => null,
-                'parameters' => [],
-            ]);
-        });
+        $options = $config->resolveOptions($this->optionsDefinition());
 
         // Preparatory work
 

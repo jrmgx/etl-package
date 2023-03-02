@@ -3,12 +3,41 @@
 namespace Jrmgx\Etl\Extract\Read;
 
 use Jrmgx\Etl\Config\ReadConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[AsTaggedItem(index: 'csv')]
 class CsvRead implements ReadInterface
 {
+    public function optionsDefinition(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('options');
+        $treeBuilder->getRootNode()
+            ->children()
+                ->booleanNode('trim')
+                    ->defaultValue(false)
+                ->end()
+                ->booleanNode('header')
+                    ->defaultValue(true)
+                ->end()
+                ->scalarNode('separator')
+                    ->defaultValue(',')
+                ->end()
+                ->scalarNode('enclosure')
+                    ->defaultValue('"')
+                ->end()
+                ->scalarNode('escape')
+                    ->defaultValue('\\')
+                ->end()
+                ->arrayNode('with_header')
+                    ->ignoreExtraKeys(false)
+                ->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+
     /**
      * @param mixed $resource a string containing a valid CSV representation of some values
      */
@@ -18,17 +47,7 @@ class CsvRead implements ReadInterface
             return []; // TODO error
         }
 
-        $options = $config->resolveCustomOptions(function (OptionsResolver $resolver) {
-            $resolver->setDefaults([
-                'trim' => false,
-                'header' => true,
-                'separator' => ',',
-                'enclosure' => '"',
-                'escape' => '\\',
-                'with_header' => null,
-            ]);
-            $resolver->addAllowedTypes('with_header', ['array', 'null']);
-        });
+        $options = $config->resolveOptions($this->optionsDefinition());
 
         $data = [];
         $headerData = null;

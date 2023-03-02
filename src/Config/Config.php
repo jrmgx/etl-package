@@ -2,43 +2,30 @@
 
 namespace Jrmgx\Etl\Config;
 
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class Config extends AbstractConfig
+class Config extends ConfigDefinition
 {
-    protected function configureOptionsResolver(OptionsResolver $resolver): void
-    {
-        $transformOptionsResolver = function (OptionsResolver $innerResolver) {
-            $innerResolver->setDefaults(['filter' => []]);
-            $innerResolver->setRequired(['mapping']);
-            $innerResolver->setAllowedTypes('filter', 'array');
-            $innerResolver->setAllowedTypes('mapping', 'array');
-        };
+    protected static ?string $rootPath = null;
 
-        if (isset($this->config['transformers'])) {
-            $resolver->setDefault('transformers', function (OptionsResolver $innerResolver) use ($transformOptionsResolver) {
-                $innerResolver->setPrototype(true);
-                $transformOptionsResolver($innerResolver);
-            });
-        } else {
-            $resolver->setDefault('transform', $transformOptionsResolver);
+    /**
+     * @param array<mixed> $config
+     * @param string       $rootPath directory from where relative path will be resolved in your configuration
+     */
+    public function __construct(protected array $config, string $rootPath)
+    {
+        parent::__construct($this->config);
+
+        self::$rootPath = $rootPath;
+    }
+
+    public static function resolvePath(string $path): string
+    {
+        if (null === self::$rootPath || !($projectRoot = realpath(self::$rootPath))) {
+            $projectRoot = realpath(__DIR__ . '/../../../');
         }
 
-        $resolver->setDefaults([
-            'extract' => function (OptionsResolver $innerResolver) {
-                $innerResolver->setRequired(['pull', 'read']);
-                $innerResolver->setAllowedTypes('pull', 'array');
-                $innerResolver->setAllowedTypes('read', 'array');
-            },
-            'load' => function (OptionsResolver $innerResolver) {
-                $innerResolver->setRequired(['write', 'push']);
-                $innerResolver->setAllowedTypes('write', 'array');
-                $innerResolver->setAllowedTypes('push', 'array');
-            },
-        ]);
-        $resolver->setRequired(['extract', 'load']);
-        $resolver->setAllowedTypes('extract', 'array');
-        $resolver->setAllowedTypes('load', 'array');
+        return (string) preg_replace('`^\./`', $projectRoot . '/', $path);
     }
 
     public function getPullConfig(): PullConfig
@@ -79,5 +66,47 @@ class Config extends AbstractConfig
     public function getPushConfig(): PushConfig
     {
         return new PushConfig($this->config['load']['push']);
+    }
+
+    protected function name(): string
+    {
+        return 'etl';
+    }
+
+    protected function configTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder($this->name());
+        $treeBuilder->getRootNode()
+            ->children()
+                ->arrayNode('extract')
+                    ->children()
+                        ->arrayNode('pull')->isRequired()->ignoreExtraKeys(false)->end()
+                        ->arrayNode('read')->isRequired()->ignoreExtraKeys(false)->end()
+                    ->end()
+                ->end()
+                ->arrayNode('transformers')
+                    ->arrayPrototype()
+                        ->children()
+                            ->arrayNode('filter')->ignoreExtraKeys(false)->end()
+                            ->arrayNode('mapping')->isRequired()->ignoreExtraKeys(false)->end()
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('transform')
+                    ->children()
+                        ->arrayNode('filter')->ignoreExtraKeys(false)->end()
+                        ->arrayNode('mapping')->isRequired()->ignoreExtraKeys(false)->end()
+                    ->end()
+                ->end()
+                ->arrayNode('load')
+                    ->children()
+                        ->arrayNode('write')->isRequired()->ignoreExtraKeys(false)->end()
+                        ->arrayNode('push')->isRequired()->ignoreExtraKeys(false)->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
     }
 }

@@ -2,19 +2,30 @@
 
 namespace Jrmgx\Etl\Config;
 
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class ReadConfig extends AbstractConfig
+class ReadConfig extends ConfigDefinition
 {
-    protected function configureOptionsResolver(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults(['options' => []]);
-        $resolver->setRequired(['format']);
-        $resolver->setAllowedTypes('format', 'string');
-    }
-
     public function getFormat(): string
     {
         return $this->config['format'];
+    }
+
+    protected function name(): string
+    {
+        return 'read';
+    }
+
+    protected function configTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder($this->name());
+        $treeBuilder->getRootNode()
+            ->children()
+                ->scalarNode('format')->end()
+                ->arrayNode('options')->ignoreExtraKeys(false)->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
     }
 }

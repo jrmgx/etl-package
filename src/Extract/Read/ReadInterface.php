@@ -3,10 +3,11 @@
 namespace Jrmgx\Etl\Extract\Read;
 
 use Jrmgx\Etl\Config\ReadConfig;
+use Jrmgx\Etl\EtlComponentInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('etl.extract.read')]
-interface ReadInterface
+interface ReadInterface extends EtlComponentInterface
 {
     /**
      * @return array<mixed>

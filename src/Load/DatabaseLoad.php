@@ -8,17 +8,27 @@ use Jrmgx\Etl\Config\PushConfig;
 use Jrmgx\Etl\Config\WriteConfig;
 use Jrmgx\Etl\Load\Push\PushInterface;
 use Jrmgx\Etl\Load\Write\WriteInterface;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[AsTaggedItem(index: 'database')]
 class DatabaseLoad implements WriteInterface, PushInterface
 {
+    public function optionsDefinition(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('options');
+        $treeBuilder->getRootNode()
+            ->children()
+                ->scalarNode('into')->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+
     public function write(array $data, WriteConfig $config): mixed
     {
-        $options = $config->resolveCustomOptions(function (OptionsResolver $resolver) {
-            $resolver->setRequired(['into']);
-        });
+        $options = $config->resolveOptions($this->optionsDefinition());
 
         return [$options, $data];
     }

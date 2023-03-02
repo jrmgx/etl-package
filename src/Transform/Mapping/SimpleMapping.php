@@ -3,6 +3,7 @@
 namespace Jrmgx\Etl\Transform\Mapping;
 
 use Jrmgx\Etl\Config\MappingConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -17,6 +18,11 @@ class SimpleMapping implements MappingInterface
         $this->propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()
             ->enableExceptionOnInvalidIndex()
             ->getPropertyAccessor();
+    }
+
+    public function optionsDefinition(): TreeBuilder
+    {
+        return new TreeBuilder('options');
     }
 
     /**

@@ -15,10 +15,10 @@
         "php": "^8.1",
         "ext-mbstring": "*",
         "doctrine/dbal": "^3.6",
+        "symfony/config": "^6.2",
         "symfony/dependency-injection": "^6.2",
         "symfony/expression-language": "^6.2",
         "symfony/http-client": "^6.2",
-        "symfony/options-resolver": "^6.2",
         "symfony/property-access": "^6.2",
         "twig/twig": "^3.5"
     },

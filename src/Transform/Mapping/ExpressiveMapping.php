@@ -3,6 +3,7 @@
 namespace Jrmgx\Etl\Transform\Mapping;
 
 use Jrmgx\Etl\Config\MappingConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
@@ -14,6 +15,11 @@ class ExpressiveMapping implements MappingInterface
     public function __construct()
     {
         $this->expressionLanguage = new ExpressionLanguage();
+    }
+
+    public function optionsDefinition(): TreeBuilder
+    {
+        return new TreeBuilder('options');
     }
 
     /**

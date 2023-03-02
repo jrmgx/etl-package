@@ -2,21 +2,10 @@
 
 namespace Jrmgx\Etl\Config;
 
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class MappingConfig extends AbstractConfig
+class MappingConfig extends ConfigDefinition
 {
-    protected function configureOptionsResolver(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'type' => 'simple',
-            'map' => null,
-            'options' => [],
-        ]);
-        $resolver->setRequired(['type']);
-        $resolver->setAllowedTypes('type', 'string');
-    }
-
     public function getType(): string
     {
         return $this->config['type'];
@@ -27,6 +16,25 @@ class MappingConfig extends AbstractConfig
      */
     public function getMap(): ?array
     {
-        return $this->config['map'];
+        return $this->config['map'] ?? null;
+    }
+
+    protected function name(): string
+    {
+        return 'mapping';
+    }
+
+    protected function configTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder($this->name());
+        $treeBuilder->getRootNode()
+            ->children()
+                ->scalarNode('type')->end()
+                ->arrayNode('map')->ignoreExtraKeys(false)->end()
+                ->arrayNode('options')->ignoreExtraKeys(false)->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
     }
 }

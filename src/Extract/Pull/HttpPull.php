@@ -3,8 +3,8 @@
 namespace Jrmgx\Etl\Extract\Pull;
 
 use Jrmgx\Etl\Config\PullConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[AsTaggedItem(index: 'http')]
@@ -15,14 +15,24 @@ class HttpPull implements PullInterface
     ) {
     }
 
+    public function optionsDefinition(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('options');
+        $treeBuilder->getRootNode()
+            ->ignoreExtraKeys(false) // TODO
+            ->children()
+                ->scalarNode('method')
+                ->defaultValue('GET')
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+
     // https://symfony.com/doc/current/http_client.html
     public function pull(PullConfig $config): mixed
     {
-        $options = $config->resolveCustomOptions(function (OptionsResolver $resolver) {
-            $resolver->setDefaults(array_merge(HttpClientInterface::OPTIONS_DEFAULTS, [
-                'method' => 'GET',
-            ]));
-        });
+        $options = $config->resolveOptions($this->optionsDefinition());
 
         $method = $options['method'];
         unset($options['method']);

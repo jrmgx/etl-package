@@ -2,18 +2,10 @@
 
 namespace Jrmgx\Etl\Config;
 
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class PullConfig extends AbstractConfig
+class PullConfig extends ConfigDefinition
 {
-    protected function configureOptionsResolver(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults(['options' => []]);
-        $resolver->setRequired(['type', 'uri']);
-        $resolver->setAllowedTypes('type', 'string');
-        $resolver->setAllowedTypes('uri', 'string');
-    }
-
     public function getType(): string
     {
         return $this->config['type'];
@@ -22,5 +14,26 @@ class PullConfig extends AbstractConfig
     public function getUri(): string
     {
         return $this->config['uri'];
+    }
+
+    protected function name(): string
+    {
+        return 'pull';
+    }
+
+    protected function configTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder($this->name());
+        $treeBuilder->getRootNode()
+            ->children()
+                ->scalarNode('type')
+                    ->isRequired()
+                ->end()
+                ->scalarNode('uri')->end()
+                ->arrayNode('options')->ignoreExtraKeys(false)->end()
+            ->end()
+        ;
+
+        return $treeBuilder;
     }
 }

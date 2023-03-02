@@ -3,8 +3,8 @@
 namespace Jrmgx\Etl\Load\Push;
 
 use Jrmgx\Etl\Config\PushConfig;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[AsTaggedItem(index: 'http')]
@@ -15,14 +15,24 @@ class HttpPush implements PushInterface
     ) {
     }
 
+    public function optionsDefinition(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('options');
+        $treeBuilder->getRootNode()
+            ->ignoreExtraKeys(false) // TODO
+            ->children()
+                ->scalarNode('method')
+                ->defaultValue('GET')
+            ->end()
+        ;
+
+        return $treeBuilder;
+    }
+
     // https://symfony.com/doc/current/http_client.html
     public function push(mixed $resource, PushConfig $config): void
     {
-        $options = $config->resolveCustomOptions(function (OptionsResolver $resolver) {
-            $resolver->setDefaults(array_merge(HttpClientInterface::OPTIONS_DEFAULTS, [
-                'method' => 'POST',
-            ]));
-        });
+        $options = $config->resolveOptions($this->optionsDefinition());
 
         $method = $options['method'];
         unset($options['method']);
