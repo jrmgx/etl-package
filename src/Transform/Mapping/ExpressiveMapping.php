@@ -17,9 +17,9 @@ class ExpressiveMapping implements MappingInterface
         $this->expressionLanguage = new ExpressionLanguage();
     }
 
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
-        return new TreeBuilder('options');
+        return null;
     }
 
     /**

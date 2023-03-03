@@ -58,17 +58,86 @@ load:
 ## Configuration
 
 On the ETL part, everything is configured into one single file that describe each steps.  
-But for the sake of simplicity, the documentation has been split into multiple sections.
+But for the sake of readability, the documentation has been split, so each component has it own page.
 
-- [Extractors](documentation/extractors.md)
-- [Extract: Pull](documentation/extract_pull.md)
-- [Extract: Read](documentation/extract_read.md)
-- [Transformers](documentation/transformers.md)
-- [Transform: Filter](documentation/transform_filter.md)
-- [Transform: Mapping](documentation/transform_mapping.md)
-- [Loaders](documentation/loaders.md)
-- [Load: Push](documentation/load_push.md)
-- [Load: Write](documentation/load_write.md)
+### Extractors
+
+Extractors are responsible to pull and read your data.
+
+**Pull**: Responsible for pulling the data from its source, be it a local file, an API or a database.  
+**Read**: Given the resource gotten in Pull, read that and convert it to a normalized array to work with later.
+
+Most of the time, the _Pull_ and _Read_ section are independent, but for some type of resource (like database),
+they work together (pull will make and handle the connection and read get the data from that connection).
+
+<!-- TOC Extract starts -->
+ - [Extract Pull: File](documentation/extract_pull_file.md)
+ - [Extract Pull: Http](documentation/extract_pull_http.md)
+ - [Extract Read: Csv](documentation/extract_read_csv.md)
+ - [Extract Read: Json](documentation/extract_read_json.md)
+ - [Extract: Database](documentation/extract_database.md)
+<!-- TOC Extract ends -->
+
+### Transformers
+
+Transformers are responsible to filter and transform the given data.
+
+**Filter**: Given the data, apply specific filtering logic.  
+**Mapping**: Given the data, associate output fields to input fields, with optional transformation.
+
+<!-- TOC Transform starts -->
+ - [Transform Mapping: Expressive](documentation/transform_mapping_expressive.md)
+ - [Transform Mapping: Simple](documentation/transform_mapping_simple.md)
+ - [Transform Filter: Query](documentation/transform_filter_query.md)
+<!-- TOC Transform ends -->
+
+#### Chaining
+
+Sometimes you may want to take advantage of multiple transformers,
+you can do it by adding multiples entries into a `transformers` section.
+
+```yaml
+transformers:
+  first_transform: # This name does not matter, but it has to be unique
+    mapping:
+      type: simple
+      map:
+        out.name: in.Name
+        out.sex: in.Sex
+        out.size: in.Height
+
+  second_transform: # This name does not matter, but it has to be unique
+    filter:
+      type: query
+      options:
+        where: 'size > :size'
+        parameters:
+          size: 2
+    mapping:
+      type: expressive
+      map:
+        out.name: in.name
+        out.sex: in.sex
+        out.squared: 'in.size * in.size'
+```
+
+### Loaders
+
+Loaders are responsible to write and push your data.
+
+**Write**: Given the data, write and convert it to the specified format / type.  
+**Push**: Given the resource gotten in Write, push it to the configured source.
+
+Most of the time, the _Write_ and _Push_ section are independent, but for some type of resource (like database),
+they work together (write prepare the data and push will handle the connection).
+
+<!-- TOC Load starts -->
+ - [Load Write: Twig](documentation/load_write_twig.md)
+ - [Load Write: Json](documentation/load_write_json.md)
+ - [Load: Database](documentation/load_database.md)
+ - [Load Push: Http](documentation/load_push_http.md)
+ - [Load Push: File](documentation/load_push_file.md)
+<!-- TOC Load ends -->
 
 ## Use it in your project
 
@@ -90,7 +159,7 @@ class YourService
 
     public function yourMethod(): void 
     {
-        // Yaml is optional, you can provide a basic array instead
+        // Yaml is optional, you can provide an array instead
         $configFile = Yaml::parseFile(__DIR__.'/../../config/etl.yaml');
         $config = new Config($configFile, __DIR__ . '/../../');
 
@@ -109,7 +178,6 @@ TODO
 
 ### Implement Custom Extractors
 
-Explain the `customOptionsResolver`
 ...
 
 ### Implement Custom Transformers

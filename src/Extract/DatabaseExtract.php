@@ -15,17 +15,21 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(index: 'database')]
 class DatabaseExtract implements PullInterface, ReadInterface
 {
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
             ->children()
                 ->arrayNode('select')
+                    ->beforeNormalization()->castToArray()->end()
                     ->ignoreExtraKeys(false)
                 ->end()
                 ->scalarNode('from')->end()
-                ->scalarNode('where')->end()
+                ->scalarNode('where')
+                    ->info('Write prepared SQL statements with placeholder: i.e. "size > :size"')
+                ->end()
                 ->arrayNode('parameters')
+                    ->info('Associate placeholders from the "where" part with the value you want: i.e. "{ size: 10 }"')
                     ->ignoreExtraKeys(false)
                 ->end()
             ->end()
@@ -48,7 +52,7 @@ class DatabaseExtract implements PullInterface, ReadInterface
             throw new \Exception();
         }
 
-        $options = $config->resolveOptions($this->optionsDefinition());
+        $options = $config->resolveOptions(self::optionsDefinition());
 
         $queryBuilder = $resource->createQueryBuilder();
         $queryBuilder->select($options['select']);

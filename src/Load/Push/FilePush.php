@@ -10,9 +10,9 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(index: 'file')]
 class FilePush implements PushInterface
 {
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
-        return new TreeBuilder('options');
+        return null;
     }
 
     public function push(mixed $resource, PushConfig $config): void

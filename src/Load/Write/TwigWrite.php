@@ -12,7 +12,7 @@ use Twig\Loader\ArrayLoader;
 #[AsTaggedItem(index: 'twig')]
 class TwigWrite implements WriteInterface
 {
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
@@ -26,7 +26,7 @@ class TwigWrite implements WriteInterface
 
     public function write(array $data, WriteConfig $config): mixed
     {
-        $options = $config->resolveOptions($this->optionsDefinition());
+        $options = $config->resolveOptions(self::optionsDefinition());
 
         $templateContent = file_get_contents(Config::resolvePath($options['template']));
 

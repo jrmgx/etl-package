@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(index: 'database')]
 class DatabaseLoad implements WriteInterface, PushInterface
 {
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
@@ -28,7 +28,7 @@ class DatabaseLoad implements WriteInterface, PushInterface
 
     public function write(array $data, WriteConfig $config): mixed
     {
-        $options = $config->resolveOptions($this->optionsDefinition());
+        $options = $config->resolveOptions(self::optionsDefinition());
 
         return [$options, $data];
     }

@@ -9,9 +9,9 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(index: 'json')]
 class JsonWrite implements WriteInterface
 {
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
-        return new TreeBuilder('options');
+        return null;
     }
 
     public function write(array $data, WriteConfig $config): mixed

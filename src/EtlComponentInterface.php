@@ -6,5 +6,5 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 interface EtlComponentInterface
 {
-    public function optionsDefinition(): TreeBuilder;
+    public static function optionsDefinition(): ?TreeBuilder;
 }

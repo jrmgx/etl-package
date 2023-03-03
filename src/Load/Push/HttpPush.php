@@ -15,7 +15,7 @@ class HttpPush implements PushInterface
     ) {
     }
 
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
@@ -32,7 +32,7 @@ class HttpPush implements PushInterface
     // https://symfony.com/doc/current/http_client.html
     public function push(mixed $resource, PushConfig $config): void
     {
-        $options = $config->resolveOptions($this->optionsDefinition());
+        $options = $config->resolveOptions(self::optionsDefinition());
 
         $method = $options['method'];
         unset($options['method']);

@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(index: 'csv')]
 class CsvRead implements ReadInterface
 {
-    public function optionsDefinition(): TreeBuilder
+    public static function optionsDefinition(): ?TreeBuilder
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
@@ -47,7 +47,7 @@ class CsvRead implements ReadInterface
             return []; // TODO error
         }
 
-        $options = $config->resolveOptions($this->optionsDefinition());
+        $options = $config->resolveOptions(self::optionsDefinition());
 
         $data = [];
         $headerData = null;
