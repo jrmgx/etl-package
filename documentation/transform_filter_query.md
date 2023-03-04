@@ -7,8 +7,8 @@ SQL like based query engine
 options:
     select:               []
 
-    # Write prepared SQL statements with placeholder: i.e. "size > :size"
-    where:                ~
+    # Prepared SQL statements with placeholder: i.e. "size > :size"
+    where:                null
 
     # Associate placeholders from the "where" part with the value you want: i.e. "{ size: 10 }"
     parameters:           []

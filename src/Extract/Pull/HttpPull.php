@@ -19,17 +19,30 @@ class HttpPull implements PullInterface
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
-            ->ignoreExtraKeys(false) // TODO
+            ->ignoreExtraKeys(false)
             ->children()
                 ->scalarNode('method')
-                ->defaultValue('GET')
+                    ->defaultValue('GET')
+                ->end()
+                ->scalarNode('auth_basic')
+                    ->info('array containing the username as first value, and optionally the password as the second one')
+                    ->defaultNull()
+                ->end()
+                ->scalarNode('auth_bearer')
+                    ->info('a token enabling HTTP Bearer authorization')
+                    ->defaultNull()
+                ->end()
+                ->arrayNode('headers')
+                    ->info('array of header names and values: "X-My-Header: My-Value"')
+                    ->ignoreExtraKeys(false)
+                    ->addDefaultsIfNotSet()
+                ->end()
             ->end()
         ;
 
         return $treeBuilder;
     }
 
-    // https://symfony.com/doc/current/http_client.html
     public function pull(PullConfig $config): mixed
     {
         $options = $config->resolveOptions(self::optionsDefinition());
@@ -38,9 +51,6 @@ class HttpPull implements PullInterface
         unset($options['method']);
 
         $response = $this->httpClient->request($method, $config->getUri(), $options);
-        if (200 !== $response->getStatusCode()) {
-            throw new \Exception();
-        }
 
         return $response->getContent();
     }

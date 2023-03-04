@@ -24,11 +24,17 @@ abstract class ConfigDefinition
     /**
      * @return array<mixed>
      */
-    public function resolveOptions(TreeBuilder $treeBuilder): array
+    public function resolveOptions(?TreeBuilder $treeBuilder): array
     {
+        if (null === $treeBuilder) {
+            throw new \Exception('No options have been configured');
+        }
+
         $processor = new Processor();
 
-        return $processor->process($treeBuilder->buildTree(), ['options' => $this->config['options']]);
+        return $processor->process($treeBuilder->buildTree(), [
+            'options' => $this->config['options'] ?? [],
+        ]);
     }
 
     abstract protected function configTreeBuilder(): TreeBuilder;

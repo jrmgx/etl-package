@@ -6,6 +6,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Jrmgx\Etl\Common\Database;
 use Jrmgx\Etl\Config\FilterConfig;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
@@ -21,9 +22,11 @@ class QueryFilter implements FilterInterface
                 ->arrayNode('select')
                     ->beforeNormalization()->castToArray()->end()
                     ->ignoreExtraKeys(false)
+                    ->addDefaultsIfNotSet()
                 ->end()
                 ->scalarNode('where')
-                    ->info('Write prepared SQL statements with placeholder: i.e. "size > :size"')
+                    ->info('Prepared SQL statements with placeholder: i.e. "size > :size"')
+                    ->defaultNull()
                 ->end()
                 ->arrayNode('parameters')
                     ->info('Associate placeholders from the "where" part with the value you want: i.e. "{ size: 10 }"')
@@ -61,8 +64,11 @@ class QueryFilter implements FilterInterface
         $keyType = [];
         $table = $schema->createTable('filterTable');
         foreach ($keyValues as $key => $values) {
-            $type = $this->deduceTypeFromColumn($values);
-            $table->addColumn($connection->quoteIdentifier((string) $key), $type);
+            $type = Database::deduceTypeFromColumn($values);
+            $table->addColumn($connection->quoteIdentifier((string) $key), $type, [
+                'notnull' => false,
+                'default' => null,
+            ]);
             $keyType[$key] = $type;
         }
 
@@ -95,12 +101,8 @@ class QueryFilter implements FilterInterface
         // Apply the query
 
         $queryBuilder = $connection->createQueryBuilder();
-        if (\is_array($options['select'])) {
-            $select = array_map($connection->quoteIdentifier(...), $options['select']);
-        } else {
-            $select = $options['select'];
-        }
-        $queryBuilder->select($select);
+        $select = array_map($connection->quoteIdentifier(...), $options['select']);
+        $queryBuilder->select(\count($select) > 0 ? $select : '*');
         $queryBuilder->from('filterTable');
         if (null !== $options['where']) {
             $queryBuilder->andWhere($options['where']);
@@ -113,7 +115,7 @@ class QueryFilter implements FilterInterface
         $results = [];
         foreach ($fetch as $line) {
             foreach ($line as $key => &$value) {
-                if (Types::BLOB === $keyType[$key]) {
+                if (null !== $value && Types::BLOB === $keyType[$key]) {
                     $value = unserialize($value);
                 }
             }
@@ -121,54 +123,5 @@ class QueryFilter implements FilterInterface
         }
 
         return $results;
-    }
-
-    protected static function isFloat(mixed $candidate): bool
-    {
-        return null === $candidate || (
-            is_numeric($candidate) && (string) (float) $candidate === (string) $candidate
-        );
-    }
-
-    protected static function isInt(mixed $candidate): bool
-    {
-        return null === $candidate || (
-            is_numeric($candidate) && (string) (int) $candidate === (string) $candidate
-        );
-    }
-
-    protected static function isStringable(mixed $candidate): bool
-    {
-        return (null === $candidate || \is_scalar($candidate)) && !\is_bool($candidate);
-    }
-
-    /**
-     * Given a list of value, try to return the best SQLite column type.
-     * Possible types: integer, text, blob, real
-     * Then we use doctrine, so it becomes: integer, text, blob, float.
-     *
-     * @see https://www.sqlite.org/datatype3.html
-     *
-     * @param array<mixed> $column
-     */
-    protected static function deduceTypeFromColumn(array $column): string
-    {
-        if (empty($column)) {
-            return Types::BLOB;
-        }
-
-        if (array_reduce($column, fn (bool $carry, mixed $item) => $carry && self::isInt($item), true)) {
-            return Types::INTEGER;
-        }
-
-        if (array_reduce($column, fn (bool $carry, mixed $item) => $carry && self::isFloat($item), true)) {
-            return Types::FLOAT;
-        }
-
-        if (array_reduce($column, fn (bool $carry, mixed $item) => $carry && self::isStringable($item), true)) {
-            return Types::TEXT;
-        }
-
-        return Types::BLOB;
     }
 }

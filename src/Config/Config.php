@@ -16,7 +16,7 @@ class Config extends ConfigDefinition
     {
         parent::__construct($this->config);
 
-        self::$rootPath = $rootPath;
+        self::setRootPath($rootPath);
     }
 
     public static function resolvePath(string $path): string
@@ -26,6 +26,11 @@ class Config extends ConfigDefinition
         }
 
         return (string) preg_replace('`^\./`', $projectRoot . '/', $path);
+    }
+
+    public static function setRootPath(string $rootPath): void
+    {
+        self::$rootPath = $rootPath;
     }
 
     public function getPullConfig(): PullConfig

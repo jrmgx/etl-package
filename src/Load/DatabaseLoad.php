@@ -2,8 +2,7 @@
 
 namespace Jrmgx\Etl\Load;
 
-use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Tools\DsnParser;
+use Jrmgx\Etl\Common\Database;
 use Jrmgx\Etl\Config\PushConfig;
 use Jrmgx\Etl\Config\WriteConfig;
 use Jrmgx\Etl\Load\Push\PushInterface;
@@ -12,7 +11,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 #[AsTaggedItem(index: 'database')]
-class DatabaseLoad implements WriteInterface, PushInterface
+class DatabaseLoad extends Database implements WriteInterface, PushInterface
 {
     public static function optionsDefinition(): ?TreeBuilder
     {
@@ -28,28 +27,27 @@ class DatabaseLoad implements WriteInterface, PushInterface
 
     public function write(array $data, WriteConfig $config): mixed
     {
-        $options = $config->resolveOptions(self::optionsDefinition());
-
-        return [$options, $data];
+        return $data;
     }
 
-    public function push(mixed $resource, PushConfig $config): void
+    public function push(mixed $resource, PushConfig $config): mixed
     {
         if (!\is_array($resource)) {
-            throw new \Exception();
+            throw new \Exception($this::class . ' can only push array');
         }
 
-        [$options, $data] = $resource;
+        $options = $config->resolveOptions(self::optionsDefinition());
 
-        $dsnParser = new DsnParser();
-        $connectionParams = $dsnParser->parse($config->getUri());
-        $connection = DriverManager::getConnection($connectionParams);
+        $connection = $this->getConnection($config->getUri());
         $connection->beginTransaction();
         try {
             $queryBuilder = $connection->createQueryBuilder();
-            foreach ($data as $d) {
-                $questionMarks = array_fill(0, \count($d), '?');
-                $values = array_combine(array_keys($d), $questionMarks);
+            foreach ($resource as $d) {
+                $values = array_combine(
+                    /* @phpstan-ignore-next-line */
+                    array_map($connection->quoteIdentifier(...), array_keys($d)),
+                    array_fill(0, \count($d), '?')
+                );
                 $parameters = array_values($d);
                 $queryBuilder
                     ->insert($options['into'])
@@ -63,5 +61,7 @@ class DatabaseLoad implements WriteInterface, PushInterface
             $connection->rollBack();
             throw $e;
         }
+
+        return null;
     }
 }

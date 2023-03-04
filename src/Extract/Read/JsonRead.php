@@ -11,15 +11,7 @@ class JsonRead implements ReadInterface
 {
     public static function optionsDefinition(): ?TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('options');
-        $treeBuilder->getRootNode()
-            ->children()
-                ->booleanNode('associative')
-                ->defaultValue(false)
-            ->end()
-        ;
-
-        return $treeBuilder;
+        return null;
     }
 
     /**
@@ -28,11 +20,9 @@ class JsonRead implements ReadInterface
     public function read(mixed $resource, ReadConfig $config): array
     {
         if (!\is_string($resource)) {
-            return []; // TODO error
+            throw new \Exception($this::class . ' can only read string');
         }
 
-        $options = $config->resolveOptions(self::optionsDefinition());
-
-        return json_decode($resource, $options['associative']);
+        return (array) json_decode($resource, associative: true);
     }
 }

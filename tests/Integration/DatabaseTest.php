@@ -2,26 +2,20 @@
 
 namespace Jrmgx\Etl\Tests\Integration;
 
+use Jrmgx\Etl\Common\Database;
 use Jrmgx\Etl\Config\FilterConfig;
 use Jrmgx\Etl\Tests\BaseTestCase;
 use Jrmgx\Etl\Transform\Filter\QueryFilter;
 
-class QueryFilterTest extends BaseTestCase
+class DatabaseTest extends BaseTestCase
 {
     /**
      * @dataProvider columData
      */
     public function testDeduceTypeFromColumn(array $values, string $type): void
     {
-        $class = new class() extends QueryFilter {
-            public static function deduceTypeFromColumnPublic(array $column): string
-            {
-                return self::deduceTypeFromColumn($column);
-            }
-        };
-
         $this->assertTrue(
-            ($t = $class::deduceTypeFromColumnPublic($values)) === $type,
+            ($t = Database::deduceTypeFromColumn($values)) === $type,
             "Error '$type' not deduced from values but '$t': " . json_encode($values)
         );
     }

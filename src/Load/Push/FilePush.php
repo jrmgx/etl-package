@@ -15,8 +15,10 @@ class FilePush implements PushInterface
         return null;
     }
 
-    public function push(mixed $resource, PushConfig $config): void
+    public function push(mixed $resource, PushConfig $config): mixed
     {
         file_put_contents(Config::resolvePath($config->getUri()), $resource);
+
+        return null;
     }
 }

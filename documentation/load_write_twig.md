@@ -3,7 +3,7 @@
 <!-- config starts -->
 ```yaml
 options:
-    template:             ~
+    template:             ~ # Required
 
 ```
 <!-- config ends -->

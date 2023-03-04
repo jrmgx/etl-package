@@ -19,10 +19,24 @@ class HttpPush implements PushInterface
     {
         $treeBuilder = new TreeBuilder('options');
         $treeBuilder->getRootNode()
-            ->ignoreExtraKeys(false) // TODO
+            ->ignoreExtraKeys(false)
             ->children()
                 ->scalarNode('method')
-                ->defaultValue('GET')
+                    ->defaultValue('POST')
+                ->end()
+                ->scalarNode('auth_basic')
+                    ->info('array containing the username as first value, and optionally the password as the second one')
+                    ->defaultNull()
+                ->end()
+                ->scalarNode('auth_bearer')
+                    ->info('a token enabling HTTP Bearer authorization')
+                    ->defaultNull()
+                ->end()
+                ->arrayNode('headers')
+                    ->info('array of header names and values: "X-My-Header: My-Value"')
+                    ->ignoreExtraKeys(false)
+                    ->addDefaultsIfNotSet()
+                ->end()
             ->end()
         ;
 
@@ -30,21 +44,17 @@ class HttpPush implements PushInterface
     }
 
     // https://symfony.com/doc/current/http_client.html
-    public function push(mixed $resource, PushConfig $config): void
+    public function push(mixed $resource, PushConfig $config): mixed
     {
         $options = $config->resolveOptions(self::optionsDefinition());
 
         $method = $options['method'];
         unset($options['method']);
-        unset($options['body']);
 
-        $response = $this->httpClient->request($method, $config->getUri(), array_merge($options, [
-            'body' => $resource,
-        ]));
-        if (200 !== $response->getStatusCode()) {
-            throw new \Exception();
-        }
+        $options['body'] = $resource;
 
-        $response->getContent();
+        $response = $this->httpClient->request($method, $config->getUri(), $options);
+
+        return $response->getContent();
     }
 }

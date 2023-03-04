@@ -9,5 +9,5 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('etl.load.push')]
 interface PushInterface extends EtlComponentInterface
 {
-    public function push(mixed $resource, PushConfig $config): void;
+    public function push(mixed $resource, PushConfig $config): mixed;
 }

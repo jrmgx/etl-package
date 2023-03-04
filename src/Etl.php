@@ -36,23 +36,38 @@ class Etl
     ) {
     }
 
-    public function execute(Config $config): void
+    public function execute(Config $config): mixed
     {
         $data = $this->extract($config->getPullConfig(), $config->getReadConfig());
         $data = $this->transform($data, $config->getTransformers());
-        $this->load($data, $config->getWriteConfig(), $config->getPushConfig());
+
+        return $this->load($data, $config->getWriteConfig(), $config->getPushConfig());
     }
 
     public function extract(PullConfig $pullConfig, ReadConfig $readConfig): mixed
     {
+        $pullResource = $this->pull($pullConfig);
+
+        return $this->read($pullResource, $readConfig);
+    }
+
+    public function pull(PullConfig $pullConfig): mixed
+    {
         /** @var PullInterface $extractPullService */
         $extractPullService = $this->pullServices->get($pullConfig->getType());
-        $readResource = $extractPullService->pull($pullConfig);
 
+        return $extractPullService->pull($pullConfig);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function read(mixed $resource, ReadConfig $readConfig): array
+    {
         /** @var ReadInterface $extractReadService */
         $extractReadService = $this->readServices->get($readConfig->getFormat());
 
-        return $extractReadService->read($readResource, $readConfig);
+        return $extractReadService->read($resource, $readConfig);
     }
 
     /**
@@ -68,15 +83,10 @@ class Etl
 
             $filterType = $filterConfig->getType();
             if ('none' !== $filterType) {
-                /** @var FilterInterface $filterService */
-                $filterService = $this->filterServices->get($filterType);
-                $data = $filterService->filter($data, $filterConfig);
+                $data = $this->filter($data, $filterConfig);
             }
 
-            /** @var MappingInterface $mappingService */
-            $mappingService = $this->mappingServices->get($mappingConfig->getType());
-
-            $data = $mappingService->map($data, $mappingConfig);
+            $data = $this->map($data, $mappingConfig);
         }
 
         return $data;
@@ -84,15 +94,56 @@ class Etl
 
     /**
      * @param array<mixed> $data
+     *
+     * @return array<mixed>
      */
-    public function load(array $data, WriteConfig $writeConfig, PushConfig $pushConfig): void
+    public function filter(array $data, FilterConfig $filterConfig): array
+    {
+        /** @var FilterInterface $filterService */
+        $filterService = $this->filterServices->get($filterConfig->getType());
+
+        return $filterService->filter($data, $filterConfig);
+    }
+
+    /**
+     * @param array<mixed> $data
+     *
+     * @return array<mixed>
+     */
+    public function map(array $data, MappingConfig $mappingConfig): array
+    {
+        /** @var MappingInterface $mappingService */
+        $mappingService = $this->mappingServices->get($mappingConfig->getType());
+
+        return $mappingService->map($data, $mappingConfig);
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    public function load(array $data, WriteConfig $writeConfig, PushConfig $pushConfig): mixed
+    {
+        $writeResource = $this->write($data, $writeConfig);
+
+        return $this->push($writeResource, $pushConfig);
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    public function write(array $data, WriteConfig $writeConfig): mixed
     {
         /** @var WriteInterface $loadWriteService */
         $loadWriteService = $this->writeServices->get($writeConfig->getFormat());
-        $writeResource = $loadWriteService->write($data, $writeConfig);
 
+        return $loadWriteService->write($data, $writeConfig);
+    }
+
+    public function push(mixed $resource, PushConfig $pushConfig): mixed
+    {
         /** @var PushInterface $loadPushService */
         $loadPushService = $this->pushServices->get($pushConfig->getType());
-        $loadPushService->push($writeResource, $pushConfig);
+
+        return $loadPushService->push($resource, $pushConfig);
     }
 }

@@ -15,10 +15,10 @@ class CsvRead implements ReadInterface
         $treeBuilder->getRootNode()
             ->children()
                 ->booleanNode('trim')
-                    ->defaultValue(false)
+                    ->defaultFalse()
                 ->end()
                 ->booleanNode('header')
-                    ->defaultValue(true)
+                    ->defaultTrue()
                 ->end()
                 ->scalarNode('separator')
                     ->defaultValue(',')
@@ -30,6 +30,7 @@ class CsvRead implements ReadInterface
                     ->defaultValue('\\')
                 ->end()
                 ->arrayNode('with_header')
+                    ->addDefaultsIfNotSet()
                     ->ignoreExtraKeys(false)
                 ->end()
             ->end()
@@ -44,7 +45,7 @@ class CsvRead implements ReadInterface
     public function read(mixed $resource, ReadConfig $config): array
     {
         if (!\is_string($resource)) {
-            return []; // TODO error
+            throw new \Exception($this::class . ' can only read string');
         }
 
         $options = $config->resolveOptions(self::optionsDefinition());
@@ -70,7 +71,7 @@ class CsvRead implements ReadInterface
             if (true === $options['header'] && null === $headerData) {
                 /** @var array<int, string> $headerData */
                 $headerData = $dataLine;
-                if (\is_array($options['with_header'])) {
+                if (\count($options['with_header']) > 0) {
                     $headerData = $options['with_header'];
                 }
                 foreach ($headerData as $key) {

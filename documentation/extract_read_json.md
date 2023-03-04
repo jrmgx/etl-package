@@ -1,9 +1,5 @@
 # Extract Read: Json
 
 <!-- config starts -->
-```yaml
-options:
-    associative:          false
-
-```
+No options for this component.
 <!-- config ends -->

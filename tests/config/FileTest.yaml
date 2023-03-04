@@ -1,0 +1,29 @@
+extract:
+  pull:
+    type: file
+    uri: ./data/data_in.csv
+  read:
+    format: csv
+    options:
+      trim: true
+      with_header: ["Name", "Sex", "Age", "Height", "Weight"]
+
+transformers:
+  first_transform:
+    mapping:
+      type: simple
+
+  second_transform:
+    mapping:
+      type: expressive
+      map:
+        out.name: in.Name
+        out.sex: in.Sex
+        out.squared: 'in.Height * in.Weight'
+
+load:
+  write:
+    format: json
+  push:
+    type: file
+    uri: ./data/data_out.json

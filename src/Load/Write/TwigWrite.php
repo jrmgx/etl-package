@@ -18,6 +18,8 @@ class TwigWrite implements WriteInterface
         $treeBuilder->getRootNode()
             ->children()
                 ->scalarNode('template')
+                ->isRequired()
+                ->end()
             ->end()
         ;
 

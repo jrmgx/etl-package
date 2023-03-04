@@ -83,9 +83,9 @@ foreach ($finder->files() as $file) {
     $type = array_pop($names);
     $title = implode(' ', $names) . ": $type";
     if ($optionsDefinition) {
-        $data = "```yaml\n".$dumper->dumpNode($optionsDefinition->buildTree())."\n```";
+        $data = "```yaml\n" . $dumper->dumpNode($optionsDefinition->buildTree()) . "\n```";
     } else {
-        $data = "No options for this component.";
+        $data = 'No options for this component.';
     }
     $toc[$names[0]][$fileName] = $title;
     if (file_exists($fileName)) {
